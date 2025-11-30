@@ -679,136 +679,106 @@ def dashboard_page(user):
 
 def qa_page():
     user = st.session_state.employees[st.session_state.current_user]
+    st.markdown("## 🤖 AI HR Chat Assistant")
 
-    st.markdown("## 🧠 Knowledge Base & Assistant")
+    # --- SHOW PDF STATUS ---
+    if st.session_state.pdf_name:
+        st.success(f"Using PDF: **{st.session_state.pdf_name}**")
+    else:
+        st.info("No PDF uploaded — answering using employee data + company policies.")
 
-    col_u, col_q = st.columns([1.2, 2])
-
-    # ----------------------------- UPLOAD AREA -----------------------------
-    with col_u:
-        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
-        st.markdown("### 📄 Document Analysis")
-
+    # --- PDF UPLOADER CARD ---
+    with st.expander("📄 Upload PDF for Document-Based Answers", expanded=True):
         uploaded = st.file_uploader("Upload Policy PDF", type=["pdf"])
-
-        if uploaded is not None:
+        if uploaded:
             process_uploaded_pdf(uploaded)
-            st.success(f"**{uploaded.name}** is ready for analysis.")
+            st.success(f"PDF **{uploaded.name}** processed successfully!")
 
-        # Summarize button
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("📌 Generate Executive Summary", type="primary"):
-            with st.spinner("Analyzing document structure..."):
-                summary, pages = summarize_pdf()
+    st.markdown("### 💬 Chat Window")
 
-            st.markdown("#### Executive Summary")
-            st.info(summary)
+    # --- CHAT WINDOW (SCROLLABLE AREA) ---
+    chat_container = st.container()
 
-            if pages:
-                pills = "".join(
-                    [f'<span class="page-pill">Page {p}</span>' for p in pages]
-                )
-                st.markdown(pills, unsafe_allow_html=True)
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # ----------------------------- CHAT AREA -----------------------------
-    with col_q:
-        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
-        st.markdown("### 💬 AI Assistant")
-
-        # PDF name
-        if st.session_state.pdf_name:
-            st.caption(f"Context: **{st.session_state.pdf_name}**")
-        else:
-            st.caption("Context: General Knowledge (No PDF Loaded)")
-
-        # CHAT WINDOW (scrollable area)
+    with chat_container:
         st.markdown(
             """
             <div style="
-                max-height: 450px;
-                min-height: 300px;
+                height: 450px;
                 overflow-y: auto;
-                padding-right: 10px;
-                display: flex;
-                flex-direction: column;
+                padding: 10px;
                 background-color: #FFFFFF;
-                border-radius: 8px;
+                border-radius: 10px;
+                border: 1px solid #E5E7EB;
             ">
             """,
             unsafe_allow_html=True,
         )
 
-        # Display history
         if not st.session_state.chat_history:
-             st.markdown('<p style="color:#9CA3AF; text-align:center; margin-top:50px;">Ask me about company policies, your salary, leaves, or uploaded documents.</p>', unsafe_allow_html=True)
+            st.markdown(
+                "<p style='text-align:center; color:#9CA3AF;'>Start chatting with your HR Assistant...</p>",
+                unsafe_allow_html=True,
+            )
 
+        # SHOW CHAT MESSAGES
         for msg in st.session_state.chat_history:
             if msg["role"] == "user":
                 st.markdown(
-                    f'<div class="chat-bubble-user">{msg["content"]}</div>',
+                    f"<div class='chat-bubble-user'>{msg['content']}</div>",
                     unsafe_allow_html=True,
                 )
             else:
                 st.markdown(
-                    f'<div class="chat-bubble-bot">{msg["content"]}</div>',
+                    f"<div class='chat-bubble-bot'>{msg['content']}</div>",
                     unsafe_allow_html=True,
                 )
 
                 if msg.get("pages"):
                     pills = "".join(
-                        [f'<span class="page-pill">Page {p}</span>' for p in msg["pages"]]
+                        f'<span class="page-pill">Page {p}</span>' for p in msg["pages"]
                     )
                     st.markdown(pills, unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # CHAT INPUT at bottom
-        st.markdown("---")
-        user_msg = st.chat_input(
-            "Type your query here..."
+    # --- CHAT INPUT (BOTTOM, OUTSIDE ALL CONTAINERS) ---
+    user_msg = st.chat_input("Ask about your salary, leaves, company, or the uploaded PDF...")
+
+    # --- PROCESS MESSAGE ---
+    if user_msg:
+        st.session_state.chat_history.append(
+            {"role": "user", "content": user_msg, "pages": []}
         )
 
-        if user_msg:
-            # save user message
-            st.session_state.chat_history.append(
-                {"role": "user", "content": user_msg, "pages": []}
-            )
+        with st.spinner("🤖 Processing your request..."):
+            # 1️⃣ EMPLOYEE-SPECIFIC Q&A
+            emp_reply = answer_employee_specific_query(user_msg, user)
+            if emp_reply:
+                reply, pages = emp_reply, []
 
-            # PROCESSING INDICATOR
-            with st.spinner("Thinking..."):
+            # 2️⃣ COMPANY FAQ
+            elif answer_faq(user_msg):
+                reply, pages = answer_faq(user_msg), []
 
-                # 1️⃣ Employee-specific questions
-                emp_reply = answer_employee_specific_query(user_msg, user)
-                if emp_reply:
-                    reply, pages = emp_reply, []
-
-                # 2️⃣ Company FAQ questions
-                elif answer_faq(user_msg):
-                    reply, pages = answer_faq(user_msg), []
-
-                # 3️⃣ PDF questions
-                elif st.session_state.pdf_chunks:
-                    if "summary" in user_msg.lower():
-                        reply, pages = summarize_pdf()
-                    else:
-                        reply, pages = build_answer_from_pdf(user_msg)
-
-                # 4️⃣ Fallback
+            # 3️⃣ PDF-BASED ANSWERS
+            elif st.session_state.pdf_chunks:
+                if "summary" in user_msg.lower():
+                    reply, pages = summarize_pdf()
                 else:
-                    reply, pages = (
-                        "Please upload a PDF or ask questions about company policies, your role, leaves, or salary.",
-                        [],
-                    )
+                    reply, pages = build_answer_from_pdf(user_msg)
 
-            # save bot reply
-            st.session_state.chat_history.append(
-                {"role": "assistant", "content": reply, "pages": pages}
-            )
-            st.rerun()
+            # 4️⃣ DEFAULT
+            else:
+                reply, pages = (
+                    "Please upload a PDF or ask about your role, salary, leaves, or company policies.",
+                    [],
+                )
 
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.session_state.chat_history.append(
+            {"role": "assistant", "content": reply, "pages": pages}
+        )
+
+        st.rerun()
 
 # ---------------------------------------------------------
 # ANALYTICS PAGE
@@ -1035,3 +1005,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
