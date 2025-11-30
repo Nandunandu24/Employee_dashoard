@@ -18,88 +18,206 @@ st.set_page_config(page_title="HR Assistant Portal", layout="wide", page_icon="�
 
 
 def inject_css():
+    """Professional Corporate Theme + Custom Components."""
     st.markdown(
         """
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        /* --------------------------------------------------------
+           GLOBAL RESET & TYPOGRAPHY
+        --------------------------------------------------------- */
         .stApp {
-            background: radial-gradient(circle at top left, #1f2933 0, #020617 55%, #000000 100%);
-            color: #f9fafb;
+            background-color: #F3F4F6 !important; /* Light Gray Background */
+            color: #1F2937 !important; /* Dark Gray Text */
+            font-family: 'Inter', sans-serif;
         }
+
         .block-container {
             padding-top: 2rem;
         }
+
+        h1, h2, h3 {
+            color: #111827 !important;
+            font-weight: 700 !important;
+        }
+
+        /* --------------------------------------------------------
+           SIDEBAR (Dark Corporate Blue)
+        --------------------------------------------------------- */
         section[data-testid="stSidebar"] {
-            background: rgba(15, 23, 42, 0.9);
-            border-right: 1px solid rgba(148, 163, 184, 0.4);
-            backdrop-filter: blur(18px);
+            background-color: #1E293B !important; /* Dark Slate Blue */
+            border-right: 1px solid #334155 !important;
         }
-        .glass-card {
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 16px;
-            padding: 1rem 1.2rem;
-            border: 1px solid rgba(148, 163, 184, 0.45);
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(16px);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        section[data-testid="stSidebar"] h1, 
+        section[data-testid="stSidebar"] h2, 
+        section[data-testid="stSidebar"] h3, 
+        section[data-testid="stSidebar"] span, 
+        section[data-testid="stSidebar"] div,
+        section[data-testid="stSidebar"] label {
+            color: #F8FAFC !important; /* White Text */
         }
-        .glass-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.85);
+        
+        section[data-testid="stSidebar"] hr {
+            border-color: #475569 !important;
         }
+
+        /* --------------------------------------------------------
+           PROFESSIONAL CARDS (Solid White)
+        --------------------------------------------------------- */
+        .pro-card {
+            background-color: #FFFFFF !important;
+            border-radius: 8px !important;
+            padding: 1.5rem !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            margin-bottom: 1rem;
+        }
+
+        /* --------------------------------------------------------
+           METRICS
+        --------------------------------------------------------- */
         .metric-label {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.09em;
-            color: #cbd5f5;
-        }
-        .metric-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #e5e7eb;
-        }
-        .metric-sub {
             font-size: 0.85rem;
-            color: #9ca3af;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: #6B7280; /* Gray-500 */
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
         }
-        .chat-bubble-user {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            padding: 0.7rem 0.9rem;
-            border-radius: 16px 16px 4px 16px;
-            margin-bottom: 0.5rem;
-            align-self: flex-end;
-            max-width: 80%;
-            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.5);
-            font-size: 0.9rem;
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #111827; /* Gray-900 */
         }
-        .chat-bubble-bot {
-            background: rgba(15, 23, 42, 0.9);
-            color: #e5e7eb;
-            padding: 0.7rem 0.9rem;
-            border-radius: 16px 16px 16px 4px;
-            margin-bottom: 0.6rem;
-            align-self: flex-start;
-            max-width: 80%;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-            font-size: 0.9rem;
+
+        .metric-sub {
+            font-size: 0.875rem;
+            color: #4B5563; /* Gray-600 */
+            margin-top: 0.25rem;
         }
+
+        /* --------------------------------------------------------
+           INPUT FIELDS (High Contrast)
+        --------------------------------------------------------- */
+        /* Force inputs to be white with black text */
+        input, textarea, select, .stTextInput > div > div > input {
+            background-color: #FFFFFF !important;
+            color: #111827 !important; /* Almost Black */
+            border: 1px solid #D1D5DB !important; /* Visible Border */
+            border-radius: 6px !important;
+            padding: 0.6rem !important;
+        }
+
+        /* Input Label Color */
+        .stTextInput > label, .stSelectbox > label, .stFileUploader > label {
+            color: #374151 !important;
+            font-weight: 600;
+        }
+
+        input:focus {
+            outline: none !important;
+            border: 1px solid #2563EB !important; /* Corporate Blue Focus */
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+        }
+
+        /* --------------------------------------------------------
+           BUTTONS (Solid Corporate Blue)
+        --------------------------------------------------------- */
+        button[kind="primary"] {
+            background-color: #2563EB !important; /* Royal Blue */
+            color: #FFFFFF !important;
+            border-radius: 6px !important;
+            border: none !important;
+            font-weight: 600 !important;
+            transition: background-color 0.2s;
+        }
+
+        button[kind="primary"]:hover {
+            background-color: #1D4ED8 !important; /* Darker Blue */
+        }
+        
+        button[kind="secondary"] {
+            background-color: #FFFFFF !important;
+            color: #374151 !important;
+            border: 1px solid #D1D5DB !important;
+        }
+
+        /* --------------------------------------------------------
+           CHAT AREA
+        --------------------------------------------------------- */
         .chat-container {
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.5rem;
         }
+
+        /* User Chat Bubble (Blue) */
+        .chat-bubble-user {
+            background-color: #2563EB !important;
+            color: #FFFFFF !important;
+            padding: 10px 16px;
+            border-radius: 12px 12px 2px 12px;
+            align-self: flex-end;
+            max-width: 80%;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 8px;
+            margin-left: auto;
+        }
+
+        /* Bot Chat Bubble (White/Gray) */
+        .chat-bubble-bot {
+            background-color: #F3F4F6 !important;
+            color: #1F2937 !important;
+            padding: 10px 16px;
+            border-radius: 12px 12px 12px 2px;
+            align-self: flex-start;
+            max-width: 80%;
+            border: 1px solid #E5E7EB;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        /* --------------------------------------------------------
+           PAGE NUMBER PILLS
+        --------------------------------------------------------- */
         .page-pill {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.6rem;
-            border-radius: 999px;
-            background: rgba(37, 99, 235, 0.12);
-            border: 1px solid rgba(96, 165, 250, 0.7);
+            background: #E0F2FE !important;
+            color: #0369A1 !important;
+            border: 1px solid #BAE6FD !important;
+            padding: 2px 8px;
+            border-radius: 12px;
             font-size: 0.75rem;
-            color: #bfdbfe;
-            margin-right: 0.25rem;
-            margin-bottom: 0.2rem;
+            font-weight: 600;
+            margin-right: 5px;
+            display: inline-block;
+            margin-top: 4px;
         }
+
+        /* --------------------------------------------------------
+           CREDENTIALS BOX (Login Page)
+        --------------------------------------------------------- */
+        .credentials-box {
+            background-color: #EFF6FF; /* Light Blue */
+            border: 1px solid #BFDBFE;
+            color: #1E3A8A;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        .credentials-box code {
+            background-color: #FFFFFF;
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid #BFDBFE;
+            color: #D97706; /* Amber for highlight */
+            font-weight: bold;
+        }
+
         </style>
         """,
         unsafe_allow_html=True,
@@ -245,22 +363,22 @@ COMPANY_FAQ = [
     },
     {
         "keywords": ["leave", "leaves", "vacation", "holiday"],
-        "answer": "Employees receive 18 days of paid leave per year."
+        "answer": "Employees receive 18 days of paid leave per year, including casual and sick leaves."
     },
     {
         "keywords": ["probation", "confirmation"],
-        "answer": "Probation period is 3 months from the date of joining."
+        "answer": "Probation period is 3 months from the date of joining, after which performance is reviewed for confirmation."
     },
     {
         "keywords": ["remote", "work from home", "wfh"],
-        "answer": "Remote work up to 2 days per week based on project and manager approval."
+        "answer": "Employees can work remotely up to 2 days per week, subject to project and manager approval."
     },
     {
         "keywords": ["company", "what do you do", "about"],
         "answer": (
             "We are **NovaMind AI Solutions**, an AI & Data Science focused technology company.\n"
             "- HQ: Bangalore\n- 1200+ employees\n"
-            "- Products: HR AI Assistants, predictive analytics, NLP automation, and enterprise GenAI tools."
+            "- Products: HR AI Assistants, predictive analytics, NLP automation, and enterprise GenAI platforms."
         ),
     },
 ]
@@ -432,17 +550,30 @@ def answer_employee_specific_query(query, user):
 
 
 def login_page():
-    st.markdown("## 🔐 HR Assistant Login")
+    st.markdown("## 🔐 HR Assistant Portal")
+    
+    # DISTINCT CREDENTIALS BOX
     st.markdown(
-        "Use sample credentials like `user01` / `pass01`, `user02` / `pass02`, ... `user30` / `pass30`."
+        """
+        <div class="credentials-box">
+            <strong>ℹ️ Demo Credentials:</strong><br>
+            Username: <code>user01</code>, <code>user02</code> ... <code>user30</code><br>
+            Password: <code>pass01</code>, <code>pass02</code> ... <code>pass30</code>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
-    col1, col2 = st.columns([1.2, 1])
+
+    col1, _ = st.columns([1.5, 1])
     with col1:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### Sign In")
         with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Login")
+            username = st.text_input("Username", placeholder="Enter your username")
+            password = st.text_input("Password", type="password", placeholder="Enter your password")
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            submitted = st.form_submit_button("Secure Login", type="primary")
 
             if submitted:
                 employees = st.session_state.employees
@@ -459,77 +590,72 @@ def login_page():
                     st.session_state.pdf_name = None
 
                     st.success(f"Welcome, {employees[username]['name']}!")
-                    # redirect to main app (Dashboard)
                     st.rerun()
                 else:
                     st.error("Invalid username or password.")
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# DASHBOARD PAGE (main, no QA here)
+# DASHBOARD PAGE
 # ---------------------------------------------------------
 
 
 def dashboard_page(user):
-    st.markdown("## 🏠 My Dashboard")
+    st.markdown("## 🏠 Executive Dashboard")
 
     col1, col2, col3 = st.columns(3)
     salary = user["salary"]
     leaves = user["leaves"]
 
     with col1:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown('<div class="metric-label">Employee</div>', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown('<div class="metric-label">Employee Profile</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{user["name"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="metric-sub">{user["role"]}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-sub" style="color:#2563EB;">{user["role"]}</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown('<div class="metric-label">Net Salary</div>', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown('<div class="metric-label">Net Compensation</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">₹ {salary["net"]:,}</div>', unsafe_allow_html=True)
         st.markdown(
-            f'<div class="metric-sub">Basic: ₹{salary["basic"]:,} | HRA: ₹{salary["hra"]:,}</div>',
+            f'<div class="metric-sub">Monthly Gross: ₹{salary["basic"] + salary["hra"] + salary["allowance"]:,}</div>',
             unsafe_allow_html=True,
         )
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col3:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown('<div class="metric-label">Leaves</div>', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown('<div class="metric-label">Leave Balance</div>', unsafe_allow_html=True)
         st.markdown(
-            f'<div class="metric-value">{leaves["pending"]} pending</div>',
+            f'<div class="metric-value">{leaves["pending"]} Days</div>',
             unsafe_allow_html=True,
         )
         st.markdown(
-            f'<div class="metric-sub">Used: {leaves["used"]} / {leaves["total"]}</div>',
+            f'<div class="metric-sub">Utilization: {leaves["used"]}/{leaves["total"]} days</div>',
             unsafe_allow_html=True,
         )
         st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("---")
-
     col_a, col_b = st.columns([1.5, 1])
     with col_a:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
         st.markdown("### 📌 Projects Overview")
         cp = user["current_project"]
-        st.markdown(f"**Current Project:** {cp['name']}  ")
-        st.markdown(f"- Status: `{cp['status']}`")
-        st.markdown(f"- Client: `{cp['client']}`")
+        st.info(f"**Current Active Project:** {cp['name']} \n\n *Status:* {cp['status']} | *Client:* {cp['client']}")
 
         st.markdown("**Pending Projects:**")
         for p in user["pending_projects"]:
             st.markdown(f"- ⏳ {p}")
 
-        st.markdown("**Previous Projects:**")
+        st.markdown("**Completed Projects:**")
         for p in user["previous_projects"]:
             st.markdown(f"- ✅ {p}")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col_b:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### ⏱ Weekly Hours Snapshot")
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### ⏱ Activity Snapshot")
         hours = user["weekly_hours"]
         total_hours = sum(hours.values())
         st.metric("Total Hours (This Week)", f"{total_hours:.1f} hrs")
@@ -537,39 +663,46 @@ def dashboard_page(user):
         df_hours = pd.DataFrame(
             {"Day": list(hours.keys()), "Hours": list(hours.values())}
         )
-        st.bar_chart(df_hours.set_index("Day"))
+        # UPDATED CHART COLOR: Corporate Blue
+        chart = alt.Chart(df_hours).mark_bar(color="#2563EB").encode(
+            x=alt.X("Day:N", sort=list(hours.keys())),
+            y="Hours:Q",
+            tooltip=["Day", "Hours"]
+        )
+        st.altair_chart(chart, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# QA PAGE (PDF summarising + QA + chat) – UPDATED
+# QA PAGE (PDF summarising + QA + chat)
 # ---------------------------------------------------------
 
 
 def qa_page():
     user = st.session_state.employees[st.session_state.current_user]
 
-    st.markdown("## 🧠 PDF QA & Summarization")
+    st.markdown("## 🧠 Knowledge Base & Assistant")
 
     col_u, col_q = st.columns([1.2, 2])
 
     # ----------------------------- UPLOAD AREA -----------------------------
     with col_u:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### 📄 Upload PDF")
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### 📄 Document Analysis")
 
-        uploaded = st.file_uploader("Upload a PDF", type=["pdf"])
+        uploaded = st.file_uploader("Upload Policy PDF", type=["pdf"])
 
         if uploaded is not None:
             process_uploaded_pdf(uploaded)
-            st.success(f"PDF **{uploaded.name}** processed successfully!")
+            st.success(f"**{uploaded.name}** is ready for analysis.")
 
         # Summarize button
-        if st.button("📌 Summarize PDF"):
-            with st.spinner("📝 Generating summary..."):
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("📌 Generate Executive Summary", type="primary"):
+            with st.spinner("Analyzing document structure..."):
                 summary, pages = summarize_pdf()
 
-            st.markdown("#### Summary")
-            st.write(summary)
+            st.markdown("#### Executive Summary")
+            st.info(summary)
 
             if pages:
                 pills = "".join(
@@ -581,30 +714,36 @@ def qa_page():
 
     # ----------------------------- CHAT AREA -----------------------------
     with col_q:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### 💬 Chat Assistant")
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### 💬 AI Assistant")
 
         # PDF name
         if st.session_state.pdf_name:
-            st.caption(f"Using PDF: **{st.session_state.pdf_name}**")
+            st.caption(f"Context: **{st.session_state.pdf_name}**")
         else:
-            st.caption("No PDF uploaded yet. I will answer general questions.")
+            st.caption("Context: General Knowledge (No PDF Loaded)")
 
         # CHAT WINDOW (scrollable area)
         st.markdown(
             """
             <div style="
                 max-height: 450px;
+                min-height: 300px;
                 overflow-y: auto;
                 padding-right: 10px;
                 display: flex;
                 flex-direction: column;
+                background-color: #FFFFFF;
+                border-radius: 8px;
             ">
             """,
             unsafe_allow_html=True,
         )
 
         # Display history
+        if not st.session_state.chat_history:
+             st.markdown('<p style="color:#9CA3AF; text-align:center; margin-top:50px;">Ask me about company policies, your salary, leaves, or uploaded documents.</p>', unsafe_allow_html=True)
+
         for msg in st.session_state.chat_history:
             if msg["role"] == "user":
                 st.markdown(
@@ -626,8 +765,9 @@ def qa_page():
         st.markdown("</div>", unsafe_allow_html=True)
 
         # CHAT INPUT at bottom
+        st.markdown("---")
         user_msg = st.chat_input(
-            "Ask about PDF, company, policies, your projects or leaves..."
+            "Type your query here..."
         )
 
         if user_msg:
@@ -637,7 +777,7 @@ def qa_page():
             )
 
             # PROCESSING INDICATOR
-            with st.spinner("🤖 Processing request... Please wait..."):
+            with st.spinner("Thinking..."):
 
                 # 1️⃣ Employee-specific questions
                 emp_reply = answer_employee_specific_query(user_msg, user)
@@ -666,6 +806,7 @@ def qa_page():
             st.session_state.chat_history.append(
                 {"role": "assistant", "content": reply, "pages": pages}
             )
+            st.rerun()
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -675,7 +816,7 @@ def qa_page():
 
 
 def analytics_page(user):
-    st.markdown("## 📊 My Analytics")
+    st.markdown("## 📊 Performance Analytics")
 
     salary = user["salary"]
     leaves = user["leaves"]
@@ -684,14 +825,14 @@ def analytics_page(user):
     # ---- Top metrics row ----
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
         st.markdown('<div class="metric-label">Net Salary</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">₹ {salary["net"]:,}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="metric-sub">After Tax</div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-sub">Post-Tax</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c2:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
         st.markdown('<div class="metric-label">Leaves Pending</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{leaves["pending"]}</div>', unsafe_allow_html=True)
         st.markdown(
@@ -701,7 +842,7 @@ def analytics_page(user):
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c3:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
         total_hours = sum(hours.values())
         st.markdown('<div class="metric-label">Weekly Hours</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="metric-value">{total_hours:.1f} hrs</div>', unsafe_allow_html=True)
@@ -709,27 +850,27 @@ def analytics_page(user):
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c4:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown('<div class="metric-label">Projects</div>', unsafe_allow_html=True)
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown('<div class="metric-label">Total Projects</div>', unsafe_allow_html=True)
         st.markdown(
             f'<div class="metric-value">{1 + len(user["pending_projects"]) + len(user["previous_projects"])}</div>',
             unsafe_allow_html=True,
         )
-        st.markdown('<div class="metric-sub">Current + Pending + Previous</div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-sub">Active + Queue + History</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown("---")
 
     # ---- Row 1: Working hours + Leaves pie ----
     r1c1, r1c2 = st.columns(2)
 
     with r1c1:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### ⏱ Weekly Working Hours (Bar Chart)")
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### ⏱ Weekly Working Hours")
         df_hours = pd.DataFrame({"Day": list(hours.keys()), "Hours": list(hours.values())})
+        
+        # UPDATED COLORS: Professional Blue
         chart_hours = (
             alt.Chart(df_hours)
-            .mark_bar(color="#22c55e")
+            .mark_bar(color="#3B82F6") # Corporate Blue
             .encode(
                 x=alt.X("Day:N", sort=list(hours.keys())),
                 y="Hours:Q",
@@ -741,24 +882,25 @@ def analytics_page(user):
         st.markdown('</div>', unsafe_allow_html=True)
 
     with r1c2:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### 🧾 Leaves Used vs Pending (Pie Chart)")
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### 🧾 Leave Utilization")
         df_leaves = pd.DataFrame(
             {
                 "Status": ["Used", "Pending"],
                 "Days": [leaves["used"], leaves["pending"]],
             }
         )
+        # UPDATED COLORS: Red (Used) vs Blue (Pending)
         pie = (
             alt.Chart(df_leaves)
-            .mark_arc(innerRadius=40)
+            .mark_arc(innerRadius=50)
             .encode(
                 theta="Days:Q",
                 color=alt.Color(
                     "Status:N",
                     scale=alt.Scale(
                         domain=["Used", "Pending"],
-                        range=["#ef4444", "#3b82f6"],
+                        range=["#EF4444", "#3B82F6"], # Red / Blue
                     ),
                 ),
                 tooltip=["Status", "Days"],
@@ -772,8 +914,8 @@ def analytics_page(user):
     r2c1, r2c2 = st.columns(2)
 
     with r2c1:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### 💰 Salary Components (Bar)")
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### 💰 Salary Components")
         df_salary = pd.DataFrame(
             {
                 "Component": ["Basic", "HRA", "Allowance", "Tax", "Net"],
@@ -786,6 +928,7 @@ def analytics_page(user):
                 ],
             }
         )
+        # UPDATED COLORS: Professional Data Palette
         chart_sal = (
             alt.Chart(df_salary)
             .mark_bar()
@@ -795,7 +938,8 @@ def analytics_page(user):
                 color=alt.Color(
                     "Component:N",
                     scale=alt.Scale(
-                        range=["#6366f1", "#22c55e", "#eab308", "#ef4444", "#0ea5e9"]
+                        range=["#6366F1", "#8B5CF6", "#F59E0B", "#EF4444", "#10B981"]
+                        # Indigo, Purple, Amber, Red, Emerald
                     ),
                 ),
                 tooltip=["Component", "Amount"],
@@ -806,8 +950,8 @@ def analytics_page(user):
         st.markdown('</div>', unsafe_allow_html=True)
 
     with r2c2:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.markdown("### 📁 Project Mix")
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### 📁 Project Portfolio Mix")
         df_proj = pd.DataFrame(
             {
                 "Type": ["Current", "Pending", "Previous"],
@@ -818,6 +962,7 @@ def analytics_page(user):
                 ],
             }
         )
+        # UPDATED COLORS: Professional Status Colors
         proj_chart = (
             alt.Chart(df_proj)
             .mark_bar()
@@ -827,7 +972,8 @@ def analytics_page(user):
                 color=alt.Color(
                     "Type:N",
                     scale=alt.Scale(
-                        range=["#0ea5e9", "#f97316", "#a855f7"]
+                        range=["#10B981", "#F59E0B", "#64748B"] 
+                        # Green (Current), Amber (Pending), Slate (Previous)
                     ),
                 ),
                 tooltip=["Type", "Count"],
@@ -843,8 +989,10 @@ def analytics_page(user):
 
 
 def logout_page():
-    st.markdown("## 🚪 Logout")
-    if st.button("Logout from this session"):
+    st.markdown("## 🚪 Secure Logout")
+    st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+    st.write("Are you sure you want to end your session?")
+    if st.button("Logout", type="primary"):
         st.session_state.logged_in = False
         st.session_state.current_user = None
         st.session_state.chat_history = []
@@ -852,7 +1000,9 @@ def logout_page():
         st.session_state.vectorizer = None
         st.session_state.tfidf_matrix = None
         st.session_state.pdf_name = None
-        st.success("You have been logged out. Refresh or log in again.")
+        st.success("You have been logged out.")
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # MAIN APP
@@ -872,8 +1022,7 @@ def main():
         st.markdown("---")
         page = st.radio("Navigate", ["Dashboard", "QA", "Analytics", "Logout"])
         st.markdown("---")
-        st.caption(f"Logged in as: `{user['username']}`")
-
+        
     if page == "Dashboard":
         dashboard_page(user)
     elif page == "QA":
