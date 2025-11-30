@@ -12,6 +12,7 @@ A complete HR Assistant Web Application built with **Streamlit**, offering:
 This project is ideal for **HR automation**, **AI portals**, **Gen AI assistants**, and **enterprise chatbots**.
 
 ---
+URL: https://employeedashoard-4rckrqx7y4mn5aappzqytk2.streamlit.app/
 
 ## 🚀 Features
 
