@@ -5,14 +5,17 @@ import altair as alt
 import re
 import textwrap
 from tempfile import NamedTemporaryFile
+import os
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from pypdf import PdfReader
+from groq import Groq
 
 # ---------------------------------------------------------
 # PAGE CONFIG & GLOBAL STYLE
 # ---------------------------------------------------------
+
 
 st.set_page_config(page_title="HR Assistant Portal", layout="wide", page_icon="💼")
 
@@ -225,6 +228,48 @@ def inject_css():
 
 
 inject_css()
+
+# ---------------------------------------------------------
+# GROQ / LLAMA-3 70B CLIENT
+# ---------------------------------------------------------
+
+import os
+from groq import Groq
+from dotenv import load_dotenv
+
+load_dotenv()  # Loads .env variables
+
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+
+
+def ask_llama3(query: str, context: str = "") -> str:
+    """
+    Query LLaMA-3 70B via Groq API.
+    Used as final fallback when RAG / FAQ / Employee data are not enough.
+    """
+    prompt = f"""
+You are NovaMind HR AI Assistant.
+Always respond professionally, clearly, and concisely.
+
+Use this context only if relevant:
+{context}
+
+User question:
+{query}
+
+Now provide a helpful answer.
+"""
+    try:
+        resp = groq_client.chat.completions.create(
+            model="llama3-70b-8192",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=350,
+            temperature=0.3,
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception as e:
+        return f"⚠️ LLaMA-3 service unavailable right now: {e}"
 
 # ---------------------------------------------------------
 # SESSION STATE INIT
@@ -663,7 +708,6 @@ def dashboard_page(user):
         df_hours = pd.DataFrame(
             {"Day": list(hours.keys()), "Hours": list(hours.values())}
         )
-        # UPDATED CHART COLOR: Corporate Blue
         chart = alt.Chart(df_hours).mark_bar(color="#2563EB").encode(
             x=alt.X("Day:N", sort=list(hours.keys())),
             y="Hours:Q",
@@ -673,92 +717,125 @@ def dashboard_page(user):
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# QA PAGE (PDF summarising + QA + chat)
+# QA PAGE (LLM + RAG CHATBOT)
 # ---------------------------------------------------------
 
 
 def qa_page():
     user = st.session_state.employees[st.session_state.current_user]
-
     st.markdown("## 🤖 HR AI Assistant")
 
-    # ---- PDF Upload Section ----
-    with st.expander("📄 Upload PDF for Policy Search", expanded=True):
-        uploaded = st.file_uploader("Upload Policy PDF", type=["pdf"])
+    top_col1, top_col2 = st.columns([1.4, 1])
+
+    # --- PDF Upload + Summary ---
+    with top_col1:
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### 📄 Policy Document")
+        uploaded = st.file_uploader("Upload Policy PDF", type=["pdf"], key="pdf_uploader")
         if uploaded:
             process_uploaded_pdf(uploaded)
             st.success(f"PDF **{uploaded.name}** processed successfully!")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.session_state.pdf_name:
-        st.caption(f"Using PDF: **{st.session_state.pdf_name}**")
-    else:
-        st.caption("No PDF uploaded — answering using employee data & company policies.")
+    with top_col2:
+        st.markdown('<div class="pro-card">', unsafe_allow_html=True)
+        st.markdown("### 📌 Quick Actions")
+        if st.session_state.pdf_name:
+            st.caption(f"Using PDF: **{st.session_state.pdf_name}**")
+            if st.button("Summarize Current PDF", type="primary"):
+                with st.spinner("Summarizing PDF..."):
+                    summary, pages = summarize_pdf()
+                st.session_state.chat_history.append(
+                    {"role": "assistant", "content": summary, "pages": pages}
+                )
+        else:
+            st.caption("No PDF uploaded. You can still ask about salary, leaves, projects, or general HR policies.")
+        # Clear chat button
+        if st.button("🧹 Clear Chat History"):
+            st.session_state.chat_history = []
+            st.success("Chat cleared.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("### 💬 Conversation")
 
-    # ---- CHAT HISTORY AREA ----
+    # --- Chat area (history) ---
     chat_area = st.container()
 
     with chat_area:
-        for msg in st.session_state.chat_history:
-            if msg["role"] == "user":
-                st.markdown(
-                    f"<div class='chat-bubble-user'>{msg['content']}</div>",
-                    unsafe_allow_html=True
-                )
-            else:
-                st.markdown(
-                    f"<div class='chat-bubble-bot'>{msg['content']}</div>",
-                    unsafe_allow_html=True
-                )
-
-                # If PDF pages referenced
-                if msg.get("pages"):
-                    pills = "".join(
-                        f'<span class="page-pill">Page {p}</span>'
-                        for p in msg["pages"]
+        if not st.session_state.chat_history:
+            st.markdown(
+                "<p style='text-align:center; color:#9CA3AF; margin-top:1rem;'>"
+                "Start by asking about your salary, leaves, projects, company policies, or the uploaded PDF."
+                "</p>",
+                unsafe_allow_html=True,
+            )
+        else:
+            for msg in st.session_state.chat_history:
+                if msg["role"] == "user":
+                    st.markdown(
+                        f"<div class='chat-bubble-user'>{msg['content']}</div>",
+                        unsafe_allow_html=True
                     )
-                    st.markdown(pills, unsafe_allow_html=True)
+                else:
+                    st.markdown(
+                        f"<div class='chat-bubble-bot'>{msg['content']}</div>",
+                        unsafe_allow_html=True
+                    )
+                    if msg.get("pages"):
+                        pills = "".join(
+                            f'<span class="page-pill">Page {p}</span>' for p in msg["pages"]
+                        )
+                        st.markdown(pills, unsafe_allow_html=True)
 
-    st.markdown("---")
+    # Placeholder used for "AI is thinking..." bubble
+    thinking_placeholder = st.empty()
 
-    # ---- CHAT INPUT (OUTSIDE ALL CONTAINERS, SAFE LOCATION) ----
-    user_msg = st.chat_input("Ask about leaves, projects, salary, or the uploaded PDF...")
+    # --- Chat input (must be outside containers) ---
+    user_msg = st.chat_input("Ask about salary, leaves, projects, company policies, or PDF content...")
 
     if user_msg:
-        # Immediately show user's question
+        # Add user message immediately
         st.session_state.chat_history.append(
             {"role": "user", "content": user_msg, "pages": []}
         )
 
-        # Temporary “thinking...” message
-        thinking_placeholder = chat_area.empty()
+        # Show "AI is thinking..." bubble with ...
         thinking_placeholder.markdown(
-            "<div class='chat-bubble-bot'>⏳ Thinking...</div>",
+            "<div class='chat-bubble-bot'>🤖 AI is thinking<br><span style='font-size:22px;'>...</span></div>",
             unsafe_allow_html=True
         )
 
-        # ---- PROCESS THE MESSAGE ----
+        # PRIORITY 1: Employee-specific answers
         emp_reply = answer_employee_specific_query(user_msg, user)
-
         if emp_reply:
             reply, pages = emp_reply, []
+
+        # PRIORITY 2: FAQ
         elif answer_faq(user_msg):
             reply, pages = answer_faq(user_msg), []
+
+        # PRIORITY 3: PDF RAG
         elif st.session_state.pdf_chunks:
             if "summary" in user_msg.lower():
                 reply, pages = summarize_pdf()
             else:
                 reply, pages = build_answer_from_pdf(user_msg)
-        else:
-            reply, pages = (
-                "Please upload a PDF or ask me about your salary, leaves, role, or company policies.",
-                [],
-            )
 
-        # Remove placeholder + add final bot answer
+        # PRIORITY 4: LLaMA-3 70B Hybrid (with context if available)
+        else:
+            context = ""
+            if st.session_state.pdf_chunks:
+                ctx_chunks, _ = search_pdf_chunks(user_msg, top_k=3)
+                context = "\n\n".join([c["text"][:500] for c in ctx_chunks])
+            else:
+                context = "\n".join([f["answer"] for f in COMPANY_FAQ])
+            reply = ask_llama3(user_msg, context=context)
+            pages = []
+
+        # Remove thinking bubble
         thinking_placeholder.empty()
 
+        # Save assistant message
         st.session_state.chat_history.append(
             {"role": "assistant", "content": reply, "pages": pages}
         )
@@ -821,11 +898,9 @@ def analytics_page(user):
         st.markdown('<div class="pro-card">', unsafe_allow_html=True)
         st.markdown("### ⏱ Weekly Working Hours")
         df_hours = pd.DataFrame({"Day": list(hours.keys()), "Hours": list(hours.values())})
-        
-        # UPDATED COLORS: Professional Blue
         chart_hours = (
             alt.Chart(df_hours)
-            .mark_bar(color="#3B82F6") # Corporate Blue
+            .mark_bar(color="#3B82F6")
             .encode(
                 x=alt.X("Day:N", sort=list(hours.keys())),
                 y="Hours:Q",
@@ -845,7 +920,6 @@ def analytics_page(user):
                 "Days": [leaves["used"], leaves["pending"]],
             }
         )
-        # UPDATED COLORS: Red (Used) vs Blue (Pending)
         pie = (
             alt.Chart(df_leaves)
             .mark_arc(innerRadius=50)
@@ -855,7 +929,7 @@ def analytics_page(user):
                     "Status:N",
                     scale=alt.Scale(
                         domain=["Used", "Pending"],
-                        range=["#EF4444", "#3B82F6"], # Red / Blue
+                        range=["#EF4444", "#3B82F6"],
                     ),
                 ),
                 tooltip=["Status", "Days"],
@@ -883,7 +957,6 @@ def analytics_page(user):
                 ],
             }
         )
-        # UPDATED COLORS: Professional Data Palette
         chart_sal = (
             alt.Chart(df_salary)
             .mark_bar()
@@ -894,7 +967,6 @@ def analytics_page(user):
                     "Component:N",
                     scale=alt.Scale(
                         range=["#6366F1", "#8B5CF6", "#F59E0B", "#EF4444", "#10B981"]
-                        # Indigo, Purple, Amber, Red, Emerald
                     ),
                 ),
                 tooltip=["Component", "Amount"],
@@ -917,7 +989,6 @@ def analytics_page(user):
                 ],
             }
         )
-        # UPDATED COLORS: Professional Status Colors
         proj_chart = (
             alt.Chart(df_proj)
             .mark_bar()
@@ -927,8 +998,7 @@ def analytics_page(user):
                 color=alt.Color(
                     "Type:N",
                     scale=alt.Scale(
-                        range=["#10B981", "#F59E0B", "#64748B"] 
-                        # Green (Current), Amber (Pending), Slate (Previous)
+                        range=["#10B981", "#F59E0B", "#64748B"]
                     ),
                 ),
                 tooltip=["Type", "Count"],
@@ -977,7 +1047,8 @@ def main():
         st.markdown("---")
         page = st.radio("Navigate", ["Dashboard", "QA", "Analytics", "Logout"])
         st.markdown("---")
-        
+        st.caption(f"Logged in as `{user['username']}`")
+
     if page == "Dashboard":
         dashboard_page(user)
     elif page == "QA":
@@ -990,5 +1061,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
